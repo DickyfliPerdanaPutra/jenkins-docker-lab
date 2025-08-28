@@ -16,6 +16,8 @@ pipeline {
         stage('Run Container') {
             steps {
                 script {
+                    sh 'docker stop flask-app'
+                    sh 'docker rm flask-app'
                     sh 'docker run -d -p 5000:5000 --name flask-app jenkins-docker-lab:latest'
                 }
             }
