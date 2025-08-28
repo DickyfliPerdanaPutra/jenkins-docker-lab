@@ -17,9 +17,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push Docker Image
+      - name: Build and Push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          tags: dickyfli/my-app:latest | dickyfli/my-app:${{github.sha}}
+          tags: |
+            dickyfli/my-app:latest
+            dickyfli/my-app:${{ github.sha }}
+            dickyfli/my-app:${{ github.run_number }}
