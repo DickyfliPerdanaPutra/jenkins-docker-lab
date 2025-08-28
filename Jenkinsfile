@@ -1,40 +1,43 @@
 pipeline {
     agent any
+
     stages {
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/DickyfliPerdanaPutra/jenkins-docker-lab.git'
-            }
-        }
-        stage('Build Docker Image') {
-            when {
-                    not {
-                        anyOf {
-                                changeset pattern: 'README.md', comparator: 'GLOB'
-                                changeset pattern: 'docs/**',  comparator: 'GLOB'
-                              }
-                        }
-                    }
+        stage('Check Changes') {
             steps {
                 script {
-                    docker.build("jenkins-docker-lab:latest")
+                    // optional, cek perubahan di repo kalau Jenkins juga clone source
+                    def changes = sh(
+                        script: "git diff --name-only HEAD~1 HEAD || true",
+                        returnStdout: true
+                    ).trim()
+
+                    if (changes && !(changes.contains("app/") || changes.contains("Dockerfile"))) {
+                        echo "Tidak ada perubahan relevan, skip deploy"
+                        currentBuild.result = 'SUCCESS'
+                        error("Skip pipeline")
+                    }
                 }
             }
         }
-        stage('Run Container') {
-             when {
-                    not {
-                        anyOf {
-                                changeset pattern: 'README.md', comparator: 'GLOB'
-                                changeset pattern: 'docs/**',  comparator: 'GLOB'
-                              }
-                        }
-                    }
+
+        stage('Pull Docker Image') {
             steps {
                 script {
-                    sh 'docker stop flask-app'
-                    sh 'docker rm flask-app'
-                    sh 'docker run -d -p 5000:5000 --name flask-app jenkins-docker-lab:latest'
+                    // contoh: app Anda ada di Docker Hub dengan tag latest
+                    sh "docker pull dickyfli/my-app:latest"
+                }
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                script {
+                    // masuk ke folder docker-compose.yml Anda
+                    sh """
+                        cd /opt/myapp-deploy
+                        docker compose down
+                        docker compose up -d
+                    """
                 }
             }
         }
