@@ -22,4 +22,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: dickyfli/my-app:latest
+          tags: dickyfli/my-app:latest dickyfli/my-app:${{github.sha}}
