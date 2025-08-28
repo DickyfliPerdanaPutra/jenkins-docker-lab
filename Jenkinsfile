@@ -1,25 +1,35 @@
 pipeline {
     agent any
+
+    environment {
+        DOCKER_HUB_REPO = "dickyfli/my-app:latest"
+    }
+
+    triggers {
+        GenericTrigger(
+            genericVariables: [
+                [key: 'pushed_image', value: '$.push_data.tag']
+            ],
+            causeString: 'Triggered by Docker Hub Webhook',
+            token: 'dockerhub-trigger',
+            printContributedVariables: true,
+            printPostContent: true
+        )
+    }
+
     stages {
-        stage('Pull Docker Image') {
+        stage('Pull Latest Image') {
             steps {
-                script {
-                    // contoh: app Anda ada di Docker Hub dengan tag latest
-                    sh "docker pull dickyfli/my-app:latest"
-                }
+                sh "docker pull ${DOCKER_HUB_REPO}"
             }
         }
 
         stage('Deploy with Docker Compose') {
             steps {
-                script {
-                    // masuk ke folder docker-compose.yml Anda
-                    sh """
-                        cd /opt/myapp-deploy
-                        docker compose down
-                        docker compose up -d
-                    """
-                }
+                sh """
+                    docker compose down || true
+                    docker compose up -d
+                """
             }
         }
     }
