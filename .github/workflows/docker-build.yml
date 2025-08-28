@@ -18,9 +18,8 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and Push Docker Image
-        run: |
-          IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/jenkins-docker-lab
-          docker build -t $IMAGE_NAME:${{ github.sha }} .
-          docker push $IMAGE_NAME:${{ github.sha }}
-          docker tag $IMAGE_NAME:${{ github.sha }} $IMAGE_NAME:latest
-          docker push $IMAGE_NAME:latest
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: dickyfli/my-app:latest
