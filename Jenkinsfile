@@ -7,10 +7,10 @@ pipeline {
             }
         }
         stage('Build Docker Image') {
+            when {
+                changeset "**", exclude: ["README.md", "docs/**"]
+            }
             steps {
-                when {
-                    changeset "**", exclude: ["README.MD", "docs/**"]
-                }
                 script {
                     docker.build("jenkins-docker-lab:latest")
                 }
@@ -18,12 +18,10 @@ pipeline {
         }
         stage('Run Container') {
             when {
-                    changeset "**", exclude: ["README.MD", "docs/**"]
+                changeset "**", exclude: ["README.md", "docs/**"]
             }
             steps {
                 script {
-                    sh 'docker stop flask-app'
-                    sh 'docker rm flask-app'
                     sh 'docker run -d -p 5000:5000 --name flask-app jenkins-docker-lab:latest'
                 }
             }
