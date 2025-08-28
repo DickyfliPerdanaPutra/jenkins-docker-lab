@@ -2,24 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Check Changes') {
-            steps {
-                script {
-                    // optional, cek perubahan di repo kalau Jenkins juga clone source
-                    def changes = sh(
-                        script: "git diff --name-only HEAD~1 HEAD || true",
-                        returnStdout: true
-                    ).trim()
-
-                    if (changes && !(changes.contains("app/") || changes.contains("Dockerfile"))) {
-                        echo "Tidak ada perubahan relevan, skip deploy"
-                        currentBuild.result = 'SUCCESS'
-                        error("Skip pipeline")
-                    }
-                }
-            }
-        }
-
         stage('Pull Docker Image') {
             steps {
                 script {
